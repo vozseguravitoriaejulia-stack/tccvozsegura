@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0f0c2e" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Voz Segura" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Voz Segura — Sua voz importa</title>
     <meta
       name="description"
@@ -16,6 +20,9 @@
       href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" type="image/png" href="icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <link rel="stylesheet" href="styles.css" />
     <script>
       // Marca que o JS está disponível (habilita animações com segurança).
@@ -23,6 +30,10 @@
     </script>
   </head>
   <body>
+    <div class="offline-badge" id="offline-badge" role="status" hidden>
+      Você está offline — exibindo a versão salva neste dispositivo.
+    </div>
+
     <div class="page">
       <!-- ===================== Cabeçalho ===================== -->
       <header class="site-header" id="topo">
@@ -47,9 +58,47 @@
             <button class="nav__link" type="button" data-report>Denunciar</button>
             <button class="nav__link" type="button" data-scroll="apoio">Números de Emergência</button>
             <button class="nav__link" type="button" data-scroll="informacoes">Informações</button>
+            <button class="nav__link nav__link--restricted" type="button" data-access>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect
+                  x="4"
+                  y="10"
+                  width="16"
+                  height="11"
+                  rx="2"
+                  stroke="currentColor"
+                  stroke-width="2"
+                />
+                <path
+                  d="M8 10V7a4 4 0 0 1 8 0v3"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+              Área da Equipe
+            </button>
           </nav>
 
           <div class="header__actions">
+            <button
+              class="btn btn--ghost btn--sm install-btn"
+              type="button"
+              id="install-btn"
+              hidden
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Instalar app
+            </button>
+
             <button class="btn btn--danger btn--sm" type="button" data-report>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <circle cx="12" cy="12" r="10" fill="#dc2626" />
@@ -444,6 +493,7 @@
                 <button type="button" data-report>Denunciar</button>
                 <button type="button" data-scroll="apoio">Números de Emergência</button>
                 <button type="button" data-scroll="informacoes">Informações</button>
+                <button type="button" data-access>Área da Equipe (restrito)</button>
               </div>
             </div>
 
@@ -579,6 +629,75 @@
             Se você estiver em risco imediato, ligue <strong>100</strong> ou <strong>180</strong>.
           </p>
           <button class="btn btn--primary" type="button" data-close-modal>Entendi</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== Modal de acesso restrito ===================== -->
+    <div class="modal" id="access-modal" hidden>
+      <div class="modal__backdrop" data-close-access></div>
+      <div
+        class="modal__dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="access-title"
+      >
+        <button class="modal__close" type="button" data-close-access aria-label="Fechar">
+          &times;
+        </button>
+
+        <div class="modal__panel" data-access-view="login">
+          <div class="badge badge--center">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="4" y="10" width="16" height="11" rx="2" stroke="white" stroke-width="2" />
+              <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="white" stroke-width="2" />
+            </svg>
+            Acesso restrito à equipe
+          </div>
+          <h2 class="modal__title" id="access-title">Área da Equipe</h2>
+          <p class="modal__text">
+            Esta área é exclusiva de profissionais autorizados. Informe a senha para consultar
+            as denúncias registradas.
+          </p>
+
+          <form class="form" id="access-form" novalidate>
+            <div class="form__field">
+              <label for="access-password">Senha de acesso</label>
+              <input
+                id="access-password"
+                name="senha"
+                type="password"
+                autocomplete="current-password"
+                placeholder="Digite a senha"
+                required
+              />
+            </div>
+
+            <p class="form__error" id="access-error" hidden>
+              Senha incorreta. Tente novamente.
+            </p>
+
+            <div class="form__actions">
+              <button class="btn btn--ghost" type="button" data-close-access>Cancelar</button>
+              <button class="btn btn--primary" type="submit">Acessar</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="modal__panel" data-access-view="list" hidden>
+          <div class="reports__header">
+            <div>
+              <h2 class="modal__title">Denúncias registradas</h2>
+              <p class="modal__text" id="reports-count"></p>
+            </div>
+            <button class="btn btn--ghost btn--sm" type="button" data-logout>Sair</button>
+          </div>
+
+          <div class="reports" id="reports-list"></div>
+
+          <div class="form__actions">
+            <button class="btn btn--ghost" type="button" data-close-access>Fechar</button>
+          </div>
         </div>
       </div>
     </div>
